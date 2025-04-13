@@ -129,6 +129,38 @@ def login():
         return jsonify({"success": True, "message": "Login successful"}), 200
     else:
         return jsonify({"success": False, "message": "Invalid email or password"}), 401
+        
+
+import base64
+import requests
+from flask import request, jsonify
+
+@app.route("/generate-image", methods=["POST"])
+def generate_image():
+    data = request.json
+    prompt = data.get("prompt", "").strip()
+
+    # Ensure the prompt is provided
+    if not prompt:
+        return jsonify({"error": "Prompt is required"}), 400
+
+    headers = {
+        "Authorization": "Bearer"  # ✅ Your token
+    }
+
+    payload = {"inputs": prompt}  # Pass the user input to generate the image
+    url = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2"
+
+    # Make the POST request to Hugging Face's inference API
+    response = requests.post(url, headers=headers, json=payload)
+
+    # If successful, convert the image content to base64 and return it
+    if response.status_code == 200:
+        img_base64 = base64.b64encode(response.content).decode("utf-8")
+        return jsonify({"image_base64": img_base64})
+    else:
+        print("Hugging Face Error:", response.text)
+        return jsonify({"error": "Failed to generate image"}), 500
 
 # ✅ Run server
 # ✅ Run server for Render deployment
