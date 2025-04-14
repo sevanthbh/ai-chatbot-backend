@@ -21,14 +21,15 @@ def create_tables():
     cursor = conn.cursor()
 
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS chats (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_message TEXT,
-            bot_response TEXT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-
+    CREATE TABLE IF NOT EXISTS chats (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_message TEXT,
+        bot_response TEXT,
+        agent_type TEXT DEFAULT 'default',
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+''')
+    
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,33 +44,52 @@ def create_tables():
 create_tables()
 
 # ✅ Gemini AI response
-def generate_gemini_response(user_message):
+def generate_gemini_response(user_message, agent_type="default"):
     try:
         model = genai.GenerativeModel("gemini-1.5-pro")
-        response = model.generate_content(user_message)
+
+        # Customize the prompt based on agent type
+        if agent_type == "casual":
+            prompt = f"You're a friendly chatbot. Respond casually to: {user_message}"
+        elif agent_type == "marketer":
+            prompt = f"You're a marketing expert. Provide a powerful marketing tip or idea for: {user_message}"
+        elif agent_type == "coder":
+            prompt = f"You're a helpful programming assistant. Help with: {user_message}"
+        else:
+            prompt = user_message  # default behavior
+
+        response = model.generate_content(prompt)
         return response.text.strip() if response.text else "🤖 I couldn't generate a response."
+
     except Exception as e:
         print("Gemini Error:", e)
         return f"Sorry, an error occurred: {str(e)}"
+
 
 # ✅ Chat route
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.json
     user_message = data.get("user_message", "").strip()
+    agent_type = data.get("agent_type", "default")  # 🧠 Get the agent type
 
     if not user_message:
         return jsonify({"error": "user_message is required"}), 400
 
-    bot_response = generate_gemini_response(user_message)
+    bot_response = generate_gemini_response(user_message, agent_type)
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO chats (user_message, bot_response) VALUES (?, ?)", (user_message, bot_response))
+    cursor.execute("INSERT INTO chats (user_message, bot_response, agent_type) VALUES (?, ?, ?)",
+                   (user_message, bot_response, agent_type))
     conn.commit()
     conn.close()
 
-    return jsonify({"user_message": user_message, "bot_response": bot_response})
+    return jsonify({
+        "user_message": user_message,
+        "bot_response": bot_response,
+        "agent_type": agent_type
+    })
 
 # ✅ Chat History route
 @app.route("/get_chat_history", methods=["GET"])
@@ -85,6 +105,16 @@ def get_chat_history():
         for row in chat_data
     ]
     return jsonify(history)
+    history = [
+    {
+        "id": row["id"],
+        "user_message": row["user_message"],
+        "bot_response": row["bot_response"],
+        "agent_type": row["agent_type"],
+        "timestamp": row["timestamp"]
+    }
+    for row in chat_data
+]
 
 # ✅ Signup route
 @app.route("/signup", methods=["POST"])
