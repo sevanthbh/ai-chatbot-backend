@@ -145,17 +145,19 @@ def generate_image():
     if not prompt:
         return jsonify({"error": "Prompt is required"}), 400
 
-hf_token = os.getenv("HF_API_KEY")
-
-headers = {
-    "Authorization": f"Bearer {hf_token}"
-}
+    headers = {
+        "Authorization": "Bearer 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"  # ✅ Your token
+    }
 
     payload = {"inputs": prompt}  # Pass the user input to generate the image
     url = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2"
 
-    # Make the POST request to Hugging Face's inference API
     response = requests.post(url, headers=headers, json=payload)
+
+    if response.status_code == 200:
+        return jsonify({"image_url": response.json()}), 200
+    else:
+        return jsonify({"error": "Failed to generate image"}), response.status_code
 
     # If successful, convert the image content to base64 and return it
     if response.status_code == 200:
