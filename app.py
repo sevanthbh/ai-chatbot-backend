@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # ✅ Configure Gemini AI
-genai.configure(api_key="AIzaSyD4Eo4vk8fkRZxwVBKfoqroA_7zgXPDLxY")  # Replace with your actual Gemini key
+genai.configure(api_key="")  # Replace with your actual Gemini key
 
 # ✅ Connect to SQLite
 def get_db_connection():
@@ -145,7 +145,7 @@ def generate_image():
         return jsonify({"error": "Prompt is required"}), 400
 
     headers = {
-        "Authorization": "Bearer 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"  # ✅ Your token
+        "Authorization": "Bearer "  # ✅ Your token
     }
 
     payload = {"inputs": prompt}  # Pass the user input to generate the image
