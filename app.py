@@ -132,6 +132,7 @@ def login():
         
 
 import base64
+import os
 import requests
 from flask import request, jsonify
 
@@ -144,9 +145,11 @@ def generate_image():
     if not prompt:
         return jsonify({"error": "Prompt is required"}), 400
 
-    headers = {
-        "Authorization": "Bearer "  # ✅ Your token
-    }
+hf_token = os.getenv("HF_API_KEY")
+
+headers = {
+    "Authorization": f"Bearer {hf_token}"
+}
 
     payload = {"inputs": prompt}  # Pass the user input to generate the image
     url = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2"
