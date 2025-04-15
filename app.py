@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # ✅ Configure Gemini AI
-genai.configure(api_key="")  # Replace with your actual Gemini key
+genai.configure(api_key="AIzaSyD4Eo4vk8fkRZxwVBKfoqroA_7zgXPDLxY")  # Replace with your actual Gemini key
 
 # ✅ Connect to SQLite
 def get_db_connection():
