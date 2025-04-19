@@ -146,7 +146,7 @@ def generate_image():
         return jsonify({"error": "Prompt is required"}), 400
 
     headers = {
-        "Authorization": "Bearer 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"  # ✅ Your token
+        "Authorization": "Bearer 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"  # ✅ Your token
     }
 
     payload = {"inputs": prompt}  # Pass the user input to generate the image
